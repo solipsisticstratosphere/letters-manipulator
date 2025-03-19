@@ -10,9 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let draggedLetter = null;
   let draggedLetters = new Set();
   let dragStartIndex = -1;
-  let groupOffsets = new Map(); // Хранит относительные позиции букв в группе
+  let groupOffsets = new Map();
 
-  // Create and apply text
   applyButton.addEventListener("click", () => {
     const text = textInput.value;
     resultContainer.innerHTML = "";
@@ -30,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Handle letter selection with Ctrl key
   resultContainer.addEventListener("click", (e) => {
     if (e.target.classList.contains("letter")) {
       if (e.ctrlKey) {
@@ -44,19 +42,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Handle drag and drop
   resultContainer.addEventListener("mousedown", (e) => {
     if (e.target.classList.contains("letter")) {
       isDragging = true;
       startX = e.clientX;
       startY = e.clientY;
 
-      // Если кликнули на выделенную букву и есть другие выделенные буквы
       if (e.target.classList.contains("selected") && selectedLetters.size > 1) {
         draggedLetters = new Set(selectedLetters);
         dragStartIndex = parseInt(e.target.dataset.index);
 
-        // Сохраняем относительные позиции букв в группе
         const baseIndex = dragStartIndex;
         draggedLetters.forEach((letter) => {
           const letterIndex = parseInt(letter.dataset.index);
@@ -64,7 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
           letter.classList.add("dragging");
         });
       } else {
-        // Если кликнули на невыделенную букву или единственную выделенную
         selectedLetters.forEach((letter) => {
           letter.classList.remove("selected");
         });
@@ -78,7 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
         dragStartIndex = parseInt(draggedLetter.dataset.index);
       }
     } else {
-      // Start selection box
       startX = e.clientX;
       startY = e.clientY;
       selectionBox = document.createElement("div");
@@ -100,13 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (targetElement && targetElement.classList.contains("letter")) {
         const targetIndex = parseInt(targetElement.dataset.index);
 
-        // Проверяем, что индекс в пределах массива
         if (targetIndex < 0 || targetIndex >= letters.length) return;
 
         if (draggedLetter) {
-          // Перемещение одной буквы
           if (targetIndex !== dragStartIndex) {
-            // Перемещаем все буквы между начальной и текущей позицией
             const start = Math.min(dragStartIndex, targetIndex);
             const end = Math.max(dragStartIndex, targetIndex);
             const direction = targetIndex > dragStartIndex ? 1 : -1;
@@ -124,16 +114,13 @@ document.addEventListener("DOMContentLoaded", () => {
             draggedLetter.dataset.index = targetIndex.toString();
             dragStartIndex = targetIndex;
 
-            // Пересортировываем буквы в контейнере
             letters.sort(
               (a, b) => parseInt(a.dataset.index) - parseInt(b.dataset.index)
             );
             letters.forEach((letter) => resultContainer.appendChild(letter));
           }
         } else if (draggedLetters.size > 0) {
-          // Перемещение группы букв
           if (targetIndex !== dragStartIndex) {
-            // Проверяем, не выходим ли мы за пределы массива
             const maxOffset = Math.max(
               ...Array.from(draggedLetters).map((letter) =>
                 groupOffsets.get(letter)
@@ -145,24 +132,20 @@ document.addEventListener("DOMContentLoaded", () => {
               )
             );
 
-            // Проверяем, что все буквы группы поместятся в пределах массива
             if (
               targetIndex + maxOffset >= letters.length ||
               targetIndex + minOffset < 0
             )
               return;
 
-            // Создаем временный массив для хранения новых позиций
             const newPositions = new Map();
 
-            // Вычисляем новые позиции для всех букв
             letters.forEach((letter) => {
               if (!draggedLetters.has(letter)) {
                 const letterIndex = parseInt(letter.dataset.index);
                 let newIndex = letterIndex;
 
                 if (targetIndex > dragStartIndex) {
-                  // Перемещение вправо
                   if (
                     letterIndex > dragStartIndex &&
                     letterIndex <= targetIndex
@@ -170,7 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     newIndex = letterIndex - draggedLetters.size;
                   }
                 } else {
-                  // Перемещение влево
                   if (
                     letterIndex >= targetIndex &&
                     letterIndex < dragStartIndex
